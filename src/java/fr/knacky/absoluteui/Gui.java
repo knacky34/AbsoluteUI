@@ -53,18 +53,10 @@ public class Gui {
     this.views.add(view);
   }
 
-  public static int abuiGetWidth() {
-    return width;
-  }
-
-  public static int abuiGetHeight() {
-    return height;
-  }
 
   public static float abuiGetAspectRatio() {
     return (float) width / (float) height;
   }
-
 
   public static void init(int viewportWidth, int viewportHeight) {
     Gui.width = viewportWidth;

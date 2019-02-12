@@ -9,13 +9,13 @@ import fr.knacky.absoluteui.font.FontType;
 import fr.knacky.absoluteui.util.Loader;
 import java.io.IOException;
 
-public final class Resources {
-  public static final class textures {
+public class Resources {
+  public static class textures {
     public static int checkbox_unchecked;
     public static int checkbox_checked;
   }
 
-  public static final class font {
+  public static class font {
     public static FontType font;
     public static float size;
   }

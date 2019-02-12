@@ -6,7 +6,6 @@
 package fr.knacky.absoluteui.font;
 
 import fr.knacky.absoluteui.util.Loader;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class TextMeshCreator {

@@ -12,10 +12,9 @@ Special Thanks to [ThinMatrix](https://www.youtube.com/user/ThinMatrix/) that ha
 ### Get started
 in init method, in Main class
 ```java
-/* You can use this method or create your own to load textures and default font */
-Ressources.loadDefaults();
+Gui.init(1280, 720); //viewport width and height
+Ressources.loadDefaults(); //You can call this method or load textures and font by yourself
 
-Gui.init(1280, 720); //viewport with and height
 Gui gui = new Gui();
 
 /* Add views */

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.renderer;
 
 import fr.knacky.absoluteui.Model;
@@ -96,7 +101,6 @@ public class DrawableRenderer {
     positionsBb.flip();
 
     DrawableRenderer.model = Loader.loadToVao(positionsBb, Loader.VERTEX_POS2D);
-    MemoryUtil.memFree(positionsBb);
   }
 
   public static void clear() {
