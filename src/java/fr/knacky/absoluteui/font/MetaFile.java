@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.font;
 
+import fr.knacky.absoluteui.Gui;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,9 +29,9 @@ public class MetaFile {
 	private int paddingWidth;
 	private int paddingHeight;
 
-	public float minSize, maxSize;
-	public float minWidth, maxWidth;
-	public float minEdge, maxEdge;
+	public float minSize = 1.0f, maxSize = 50.0f;
+	public float minWidth = 0.4f, maxWidth = 0.55f;
+	public float minEdge = 0.2f, maxEdge = 0.04f;
 
 	private HashMap<Integer, Character> metaData = new HashMap<>();
 	private HashMap<String, String> values = new HashMap<>();
@@ -80,7 +86,9 @@ public class MetaFile {
 	}
 
 	private float[] getValuesOfVariableFloat(String variable) {
-		String[] numbers = values.get(variable).split(NUMBER_SEPARATOR);
+		String var = values.get(variable);
+		if (var == null) return null;
+		String[] numbers =	var.split(NUMBER_SEPARATOR);
 		float[] actualValues = new float[numbers.length];
 		for (int i = 0; i < actualValues.length; i++) {
 			actualValues[i] = Float.parseFloat(numbers[i]);
@@ -99,7 +107,7 @@ public class MetaFile {
 		processNextLine(reader);
 		int lineHeightPixels = getValueOfVariableInt("lineHeight") - paddingHeight;
 		verticalPerPixelSize = TextMeshCreator.LINE_HEIGHT / (double) lineHeightPixels;
-		horizontalPerPixelSize = verticalPerPixelSize / DisplayManager.dmGetAspectRatio();
+		horizontalPerPixelSize = verticalPerPixelSize / Gui.abuiGetAspectRatio();
 	}
 
 	private void loadFontWidthAndEdge(BufferedReader reader) throws IOException {
@@ -107,12 +115,18 @@ public class MetaFile {
 		float[] size = getValuesOfVariableFloat("fontsize");
 		float[] width = getValuesOfVariableFloat("fontwidth");
 		float[] edge = getValuesOfVariableFloat("fontedge");
-		minSize = size[0];
-		maxSize = size[1];
-		minWidth = width[0];
-		maxWidth = width[1];
-		minEdge = edge[0];
-		maxEdge = edge[1];
+		if (size != null) {
+			minSize = size[0];
+			maxSize = size[1];
+		}
+		if (width != null) {
+			minWidth = width[0];
+			maxWidth = width[1];
+		}
+		if (edge != null) {
+			minEdge = edge[0];
+			maxEdge = edge[1];
+		}
 	}
 
 	private void loadCharacterData(int imageWidth, BufferedReader reader) throws IOException {

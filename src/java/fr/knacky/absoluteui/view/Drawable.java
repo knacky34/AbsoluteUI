@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.view;
 
+import fr.knacky.absoluteui.renderer.DrawableRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 

@@ -1,8 +1,17 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.view;
 
+import fr.knacky.absoluteui.Model;
+import fr.knacky.absoluteui.Resources;
 import fr.knacky.absoluteui.font.FontType;
 import fr.knacky.absoluteui.font.MetaFile;
 import fr.knacky.absoluteui.font.TextMeshData;
+import fr.knacky.absoluteui.renderer.FontRenderer;
+import fr.knacky.absoluteui.util.Loader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -22,15 +31,15 @@ public class Text extends View {
 
   public Text(Vector2f position, String text, Vector3f color) {
     super(position, new Vector2f());
-    this.font = Resources.getDefaultFont();
+    this.font = Resources.font.font;
     this.color = color;
 
-    calculateWidthAndEdge(Resources.getDefaultFontSize());
+    float fontSize = Math.max(font.getLoader().getMetaData().minSize, Math.min(font.getLoader().getMetaData().maxSize, Resources.font.size));
+    calculateWidthAndEdge(fontSize);
 
-    TextMeshData data = font.loadText(text, Resources.getDefaultFontSize());
+    TextMeshData data = font.loadText(text, fontSize);
     super.size.set(data.sx, data.sy);
     this.model = Loader.loadToVao(data.data, Loader.VERTEX_POS2D_TEX2D);
-    MemoryUtil.memFree(data.data);
   }
 
   public Text(Vector2f position, FontType font, float fontSize, String text, Vector3f color) {
@@ -44,7 +53,6 @@ public class Text extends View {
     TextMeshData data = font.loadText(text, fontSize);
     super.size.set(data.sx, data.sy);
     this.model = Loader.loadToVao(data.data, Loader.VERTEX_POS2D_TEX2D);
-    MemoryUtil.memFree(data.data);
   }
 
   private void calculateWidthAndEdge(float fontSize) {

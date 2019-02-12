@@ -1,10 +1,18 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.view;
 
+import fr.knacky.absoluteui.Gui;
+import fr.knacky.absoluteui.Resources;
 import fr.knacky.absoluteui.callback.ActionCallback;
 import fr.knacky.absoluteui.callback.CheckedCallback;
 import fr.knacky.absoluteui.callback.PressedCallback;
 import fr.knacky.absoluteui.font.FontType;
-import java.io.IOException;
+import fr.knacky.absoluteui.renderer.DrawableRenderer;
+import fr.knacky.absoluteui.renderer.FontRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -13,27 +21,16 @@ public class Checkbox extends ClickableView {
   public static final int LABEL_RIGHT = 1;
   private static final float OFFSET = 0.01f;
 
-  private static final int[] textures = new int[2];
-
   private boolean checked = false;
   private int alignment;
 
   public final Drawable box;
   public final Text label;
 
-  static {
-    try {
-      textures[0] = Loader.loadTexture("textures/checkbox_unchecked.png", true);
-      textures[1] = Loader.loadTexture("textures/checkbox_checked.png", true);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
   public Checkbox(Vector2f position, String text, ActionCallback callback, int alignment) {
     super(position, null, callback);
     this.label = new Text(new Vector2f(position), text, new Vector3f(1.0f, 1.0f, 1.0f));
-    this.box = new Drawable(super.position, new Vector2f((label.size.y - OFFSET)/ DisplayManager.dmGetAspectRatio(), label.size.y - OFFSET), textures[0]);
+    this.box = new Drawable(super.position, new Vector2f((label.size.y - OFFSET)/ Gui.abuiGetAspectRatio(), label.size.y - OFFSET), Resources.textures.checkbox_unchecked);
     super.size = this.box.size;
 
     this.alignment = alignment;
@@ -47,7 +44,7 @@ public class Checkbox extends ClickableView {
   public Checkbox(Vector2f position, String text, FontType font, float fontSize, ActionCallback callback, int alignment) {
     super(position, null, callback);
     this.label = new Text(new Vector2f(position), font, fontSize, text, new Vector3f(1.0f, 1.0f, 1.0f));
-    this.box = new Drawable(super.position, new Vector2f((label.size.y - OFFSET)/ DisplayManager.dmGetAspectRatio(), label.size.y - OFFSET), textures[0]);
+    this.box = new Drawable(super.position, new Vector2f((label.size.y - OFFSET)/ Gui.abuiGetAspectRatio(), label.size.y - OFFSET), Resources.textures.checkbox_unchecked);
     super.size = this.box.size;
 
     this.alignment = alignment;
@@ -61,7 +58,7 @@ public class Checkbox extends ClickableView {
   public Checkbox(Vector2f position, float boxHeight, String text, ActionCallback callback, int alignment) {
     super(position, null, callback);
     this.label = new Text(new Vector2f(position), text, new Vector3f(1.0f, 1.0f, 1.0f));
-    this.box = new Drawable(super.position, new Vector2f(boxHeight / DisplayManager.dmGetAspectRatio(), boxHeight), textures[0]);
+    this.box = new Drawable(super.position, new Vector2f(boxHeight / Gui.abuiGetAspectRatio(), boxHeight), Resources.textures.checkbox_unchecked);
     this.label.position.y = super.position.y + (boxHeight - (label.size.y - OFFSET)) / 2f;
     super.size = this.box.size;
 
@@ -76,7 +73,7 @@ public class Checkbox extends ClickableView {
   public Checkbox(Vector2f position, float boxHeight, String text, FontType font, float fontSize, ActionCallback callback, int alignment) {
     super(position, null, callback);
     this.label = new Text(new Vector2f(position), font, fontSize, text, new Vector3f(1.0f, 1.0f, 1.0f));
-    this.box = new Drawable(super.position, new Vector2f(boxHeight / DisplayManager.dmGetAspectRatio(), boxHeight), textures[0]);
+    this.box = new Drawable(super.position, new Vector2f(boxHeight / Gui.abuiGetAspectRatio(), boxHeight), Resources.textures.checkbox_unchecked);
     this.label.position.y = super.position.y + (boxHeight - (label.size.y - OFFSET)) / 2f;
     super.size = this.box.size;
 
@@ -120,7 +117,7 @@ public class Checkbox extends ClickableView {
 
     if (lastPressed && !super.pressed && super.hovered) {
       checked = !checked;
-      box.setTexture(textures[checked ? 1 : 0]);
+      box.setTexture(checked ? Resources.textures.checkbox_checked : Resources.textures.checkbox_unchecked);
     }
 
     if (callback != null && (lastHovered != super.hovered || lastPressed != super.pressed)) {

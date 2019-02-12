@@ -1,11 +1,20 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui;
 
+import fr.knacky.absoluteui.renderer.DrawableRenderer;
+import fr.knacky.absoluteui.renderer.FontRenderer;
 import fr.knacky.absoluteui.view.ClickableView;
 import fr.knacky.absoluteui.view.View;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Gui {
+  private static int width, height;
+
   private ArrayList<View> views = new ArrayList<>();
 
   private DrawableRenderer drawableRenderer;
@@ -16,11 +25,7 @@ public class Gui {
     fontRenderer = new FontRenderer();
   }
 
-  public void update(InputHandler inputHandler) {
-    float x = inputHandler.getMouseX();
-    float y = inputHandler.getMouseY();
-    boolean mouse = inputHandler.isMouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-
+  public void update(float x, float y, boolean mouse) {
     for (View view : views) {
       if (view.isVisible()) {
         if (view instanceof ClickableView) {
@@ -46,5 +51,23 @@ public class Gui {
 
   public void add(View view) {
     this.views.add(view);
+  }
+
+  public static int abuiGetWidth() {
+    return width;
+  }
+
+  public static int abuiGetHeight() {
+    return height;
+  }
+
+  public static float abuiGetAspectRatio() {
+    return (float) width / (float) height;
+  }
+
+
+  public static void init(int viewportWidth, int viewportHeight) {
+    Gui.width = viewportWidth;
+    Gui.height = viewportHeight;
   }
 }

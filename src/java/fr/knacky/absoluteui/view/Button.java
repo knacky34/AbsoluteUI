@@ -1,9 +1,16 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.view;
 
 import com.sun.istack.internal.Nullable;
 import fr.knacky.absoluteui.callback.ActionCallback;
 import fr.knacky.absoluteui.callback.PressedCallback;
 import fr.knacky.absoluteui.font.FontType;
+import fr.knacky.absoluteui.renderer.DrawableRenderer;
+import fr.knacky.absoluteui.renderer.FontRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 

@@ -1,5 +1,11 @@
+/*
+ * Copyright (c) 2019 - present  Knacky34. All rights reserved.
+ * License terms: https://github.com/knacky34/AbsoluteUI/blob/master/LICENSE
+ */
+
 package fr.knacky.absoluteui.font;
 
+import fr.knacky.absoluteui.util.Loader;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -69,7 +75,7 @@ public class TextMeshCreator {
 
     curserY += LINE_HEIGHT * fontSize;
 
-    return new TextMeshData(listToByteBuffer(vertices, textureCoords), maxCursorX * 2f, curserY * 2f);
+    return new TextMeshData(Loader.listToByteBuffer(vertices, textureCoords), maxCursorX * 2f, curserY * 2f);
   }
 
   private void addVerticesForCharacter(double curserX, double curserY, Character character, double fontSize, ArrayList<Float> vertices) {
@@ -112,16 +118,5 @@ public class TextMeshCreator {
     texCoords.add((float) y);
     texCoords.add((float) x);
     texCoords.add((float) y);
-  }
-
-  private static ByteBuffer listToByteBuffer(ArrayList<Float> positions, ArrayList<Float> textureCoords) {
-    ByteBuffer bb = MemoryUtil.memAlloc(8 * positions.size());
-    for (int i = 0; i < positions.size(); i+=2) {
-      bb.putFloat(positions.get(i)).putFloat(positions.get(i + 1));
-      bb.putFloat(textureCoords.get(i)).putFloat(textureCoords.get(i + 1));
-    }
-
-    bb.flip();
-    return bb;
   }
 }
