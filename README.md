@@ -6,13 +6,14 @@ The libray actually supports renderer :
 
 \
 \
-Special Thanks to [ThinMatrix](https://www.youtube.com/user/ThinMatrix/) that had written the code for text mesh creation.
+Special Thanks to [ThinMatrix](https://www.youtube.com/user/ThinMatrix/) that had written the base code for text mesh creation.
 
 ## Usage
 ### Get started
 in init method, in Main class
 ```java
 Gui.init(1280, 720); //viewport width and height
+Gui.setKeyConstants(GLFW_PRESS, GLFW_REPEAT, GLFW_RELEASE); //constants that are used by the input system (in my case GLFW)
 Ressources.loadDefaults(); //You can call this method or load textures and font by yourself
 
 Gui gui = new Gui();
@@ -36,6 +37,7 @@ then, in update/render loop\
 `gui.update(float x, float y, boolean mouse);` update views and fire events. `<x>` and `<x>` is mouse position in the coordinate system that's used by the library [Coord System Image](https://github.com/knacky34/AbsoluteUI/blob/master/images/coordinates.png),
 `<mouse>` is the current left mouse button state.\
 `gui.render();` render visible views.\
+`gui.resize(int width, int height)` resize views when aspect ratio is changed\
 \
 before exit the app you need to clear everything.
 ```
@@ -49,18 +51,7 @@ gui.free();
 ### Font file creation
 1. Generate font file and texture atlas with distance fields, I'm using [Hiero](https://libgdx.badlogicgames.com/tools.html) ([OpenGL 3D Game Tutorial 33](https://youtu.be/d8cfgcJR9Tk?t=91))
 
-1. You should add infos about width and edge of the font under the second line of the fnt file (after lines with `padding` and `lineHeight` infos)
-
-    ```
-    fontsize=<min size>,<max size> fontwidth=<min width>,<max width> fontedge=<min edge>,<max edge>
-    ```
-    `<min size>` and `<max size>` are sizes where width and edge values are defined. (defaults: 1.0, 50.0)
-    
-    `<min width>` and `<max width>` are character's width related to thier size. Width needs to increase when font size increase. (defaults: 0.4, 0.55)
-    
-    `<min edge>` and `<max edge>` are character's antialiasing values. `<min edge>` should be greater than `<max edge>`. (defaults: 0.2, 0.04)
-  
-1. Finally, open the fnt file and delete all the lines that begins with `kernings` and `kerning`
+1. Use the Font tool to clear unused lines and add more information for distance field (The tool will be aviable soon)
 
 ## License
 This software is distributed under GNU GPLv3 license :

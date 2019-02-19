@@ -12,7 +12,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public class DisplayManager {
-  private static String title = "Robot Attack";
+  private static String title = "Absolute UI - Test Demo";
   private static long window;
   private static int width = 1280;
   private static int height = 720;
