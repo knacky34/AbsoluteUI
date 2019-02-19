@@ -6,27 +6,27 @@
 package fr.knacky.absoluteui.font;
 
 class Character {
-	private int id;
-	private double xTextureCoord;
-	private double yTextureCoord;
-	private double xMaxTextureCoord;
-	private double yMaxTextureCoord;
-	private double xOffset;
-	private double yOffset;
-	private double sizeX;
-	private double sizeY;
-	private double xAdvance;
+	private final int id;
+	private final float xTextureCoord;
+	private final float yTextureCoord;
+	private final float xTextureCoordMax;
+	private final float yTextureCoordMax;
+	private final float xOffset;
+	private final float yOffset;
+	private final float xSize;
+	private final float ySize;
+	private final float xAdvance;
 
-	Character(int id, double xTextureCoord, double yTextureCoord, double xTexSize, double yTexSize, double xOffset, double yOffset, double sizeX, double sizeY, double xAdvance) {
+	Character(int id, float xTextureCoord, float yTextureCoord, float xTextureCoordMax, float yTextureCoordMax, float xOffset, float yOffset, float xSize, float ySize, float xAdvance) {
 		this.id = id;
 		this.xTextureCoord = xTextureCoord;
 		this.yTextureCoord = yTextureCoord;
+		this.xTextureCoordMax = xTextureCoordMax;
+		this.yTextureCoordMax = yTextureCoordMax;
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
-		this.sizeX = sizeX;
-		this.sizeY = sizeY;
-		this.xMaxTextureCoord = xTexSize + xTextureCoord;
-		this.yMaxTextureCoord = yTexSize + yTextureCoord;
+		this.xSize = xSize;
+		this.ySize = ySize;
 		this.xAdvance = xAdvance;
 	}
 
@@ -34,39 +34,39 @@ class Character {
 		return id;
 	}
 
-	double getxTextureCoord() {
+	float getxTextureCoord() {
 		return xTextureCoord;
 	}
 
-	double getyTextureCoord() {
+	float getyTextureCoord() {
 		return yTextureCoord;
 	}
 
-	double getXMaxTextureCoord() {
-		return xMaxTextureCoord;
+	float getxTextureCoordMax() {
+		return xTextureCoordMax;
 	}
 
-	double getYMaxTextureCoord() {
-		return yMaxTextureCoord;
+	float getyTextureCoordMax() {
+		return yTextureCoordMax;
 	}
 
-	double getxOffset() {
+	float getxOffset() {
 		return xOffset;
 	}
 
-	double getyOffset() {
+	float getyOffset() {
 		return yOffset;
 	}
 
-	double getSizeX() {
-		return sizeX;
+	float getxSize() {
+		return xSize;
 	}
 
-	double getSizeY() {
-		return sizeY;
+	float getySize() {
+		return ySize;
 	}
 
-	double getxAdvance() {
+	float getxAdvance() {
 		return xAdvance;
 	}
 }

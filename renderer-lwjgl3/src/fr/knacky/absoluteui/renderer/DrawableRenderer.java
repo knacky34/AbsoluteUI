@@ -6,12 +6,14 @@
 package fr.knacky.absoluteui.renderer;
 
 import fr.knacky.absoluteui.Model;
+import fr.knacky.absoluteui.TextureAtlas;
 import fr.knacky.absoluteui.view.Drawable;
 import fr.knacky.absoluteui.util.Loader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -21,7 +23,7 @@ import static org.lwjgl.opengl.GL30C.glBindVertexArray;
 
 public class DrawableRenderer {
   private static Model model;
-  private static ArrayList<Drawable> drawables = new ArrayList<>();
+  private static HashMap<TextureAtlas, ArrayList<Drawable>> drawables = new HashMap<>();
 
   private int programID;
   private int vshaderID;
@@ -29,6 +31,7 @@ public class DrawableRenderer {
 
   private int uniform_transfrom;
   private int uniform_color;
+  private int uniform_textureCoord;
   private int uniform_texture;
 
   static {
@@ -50,6 +53,7 @@ public class DrawableRenderer {
   private void initShaderProgram() {
     uniform_transfrom = glGetUniformLocation(programID, "transform");
     uniform_color = glGetUniformLocation(programID, "color");
+    uniform_textureCoord = glGetUniformLocation(programID, "textureCoord");
     uniform_texture = glGetUniformLocation(programID, "tex");
     glUseProgram(programID);
     glUniform1i(uniform_texture, 0);
@@ -63,17 +67,25 @@ public class DrawableRenderer {
     glUseProgram(programID);
     glBindVertexArray(model.getVaoID());
 
-    for (Drawable drawable : drawables) {
-      if (drawable.getTexture() != 0) {
-        glBindTexture(GL_TEXTURE_2D, drawable.getTexture());
-        loadUniformVector3f(uniform_color, -1f, 0f, 0f);
+    for (TextureAtlas texture : drawables.keySet()) {
+      if (texture == null) {
+        loadUniform3f(uniform_textureCoord, -1f, 0f, 0f);
       } else {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        loadUniformVector3f(uniform_color, drawable.getColor());
+        glBindTexture(GL_TEXTURE_2D, texture.getTexture());
       }
-      loadUniformVector4f(uniform_transfrom, drawable.getPosition().x, drawable.getPosition().y, drawable.getSize().x, drawable.getSize().y);
 
-      glDrawArrays(GL_TRIANGLES, 0, model.getVertexCount());
+      for (Drawable drawable : drawables.get(texture)) {
+        if (texture != null) {
+          loadUniform3f(uniform_color, -1f, 0f, 0f);
+          loadUniform3f(uniform_textureCoord, texture.getX(drawable.getTextureIndex()), texture.getY(drawable.getTextureIndex()), texture.getSize());
+        } else {
+          loadUniform3f(uniform_color, drawable.getColor());
+        }
+
+        loadUniform4f(uniform_transfrom, drawable.getPosition().x, drawable.getPosition().y, drawable.getSize().x, drawable.getSize().y);
+
+        glDrawArrays(GL_TRIANGLES, 0, model.getVertexCount());
+      }
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -81,6 +93,20 @@ public class DrawableRenderer {
     glUseProgram(0);
     glDisable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+  }
+
+  public void renderToStencil(ArrayList<Drawable> drawablesList) {
+    glUseProgram(programID);
+    glBindVertexArray(model.getVaoID());
+    loadUniform3f(uniform_color, 1.0f, 1.0f, 1.0f);
+
+    for (Drawable drawable : drawablesList) {
+      loadUniform4f(uniform_transfrom, drawable.getPosition().x, drawable.getPosition().y, drawable.getSize().x, drawable.getSize().y);
+      glDrawArrays(GL_TRIANGLES, 0, model.getVertexCount());
+    }
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 
   public void free() {
@@ -101,6 +127,7 @@ public class DrawableRenderer {
     positionsBb.flip();
 
     DrawableRenderer.model = Loader.loadToVao(positionsBb, Loader.VERTEX_POS2D);
+    MemoryUtil.memFree(positionsBb);
   }
 
   public static void clear() {
@@ -108,10 +135,20 @@ public class DrawableRenderer {
   }
 
   public static void add(Drawable drawable) {
-    drawables.add(drawable);
+    TextureAtlas texture = drawable.getTexture();
+    ArrayList<Drawable> batch = drawables.get(texture);
+    if (batch != null) {
+      batch.add(drawable);
+    } else {
+      ArrayList<Drawable> newBatch = new ArrayList<>();
+      newBatch.add(drawable);
+      drawables.put(texture, newBatch);
+    }
   }
 
   public static void add(ArrayList<Drawable> drawableList) {
-    drawables.addAll(drawableList);
+    for (Drawable drawable : drawableList) {
+      add(drawable);
+    }
   }
 }

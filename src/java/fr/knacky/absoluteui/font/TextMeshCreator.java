@@ -8,46 +8,58 @@ package fr.knacky.absoluteui.font;
 import fr.knacky.absoluteui.util.Loader;
 import java.util.ArrayList;
 
-public class TextMeshCreator {
-  static final float LINE_HEIGHT = 0.03f;
-  static final int ASCII_SPACE = 32;
-  private static final int ASCII_NEWLINE = 10;
+import static fr.knacky.absoluteui.font.MetaFile.*;
 
+class TextMeshCreator {
   private MetaFile metaData;
 
   TextMeshCreator(String metaRes) {
     metaData = new MetaFile(metaRes);
   }
 
-  TextMeshData createTextMesh(String text, float fontSize) {
+  TextMeshData createTextMesh(String text) {
     ArrayList<Character> characters = createStructure(text);
-    return createQuadVertices(fontSize, characters);
+    return createQuadVertices(characters);
   }
 
-  public MetaFile getMetaData() {
-    return metaData;
+  float calculateTextMeshWidth(String text) {
+    float cursor = 0f;
+    for (int ascii : text.toCharArray()) {
+      if (ascii == ASCII_SPACE) {
+        cursor += metaData.getSpaceWidth();
+        continue;
+      }
+
+      Character c = metaData.getCharacter(ascii);
+      if (c == null) {
+        c = metaData.getCharacter(ASCII_UNKNOWN);
+      }
+      cursor += c.getxAdvance();
+    }
+    return cursor;
   }
 
   private ArrayList<Character> createStructure(String text) {
     ArrayList<Character> characters = new ArrayList<>();
-    char[] chars = text.toCharArray();
 
-    for (char c : chars) {
-      int ascii = (int) c;
+    for (int ascii : text.toCharArray()) {
       if (ascii == ASCII_SPACE) {
-        characters.add(new Character(32,0,0,0,0,0,0,0,0,30));
+        characters.add(new Character(ASCII_SPACE,0,0,0,0,0,0,0,0,0));
         continue;
       } else if (ascii == ASCII_NEWLINE) {
-        characters.add(new Character(10,0,0,0,0,0,0,0,0,0));
+        characters.add(new Character(ASCII_NEWLINE,0,0,0,0,0,0,0,0,0));
         continue;
       }
       Character character = metaData.getCharacter(ascii);
+      if (character == null) {
+        character = metaData.getCharacter(ASCII_UNKNOWN);
+      }
       characters.add(character);
     }
     return characters;
   }
 
-  private TextMeshData createQuadVertices(float fontSize, ArrayList<Character> characters) {
+  private TextMeshData createQuadVertices(ArrayList<Character> characters) {
     float curserX = 0f;
     float curserY = 0f;
     float maxCursorX = 0f;
@@ -57,36 +69,32 @@ public class TextMeshCreator {
 
     for (Character letter : characters) {
       if (letter.getId() == ASCII_SPACE) {
-        curserX += metaData.getSpaceWidth() * fontSize;
-        continue;
+        curserX += metaData.getSpaceWidth();
       } else if (letter.getId() == ASCII_NEWLINE) {
         curserX = 0f;
-        curserY += LINE_HEIGHT * fontSize;
+        curserY += LINE_HEIGHT;
         continue;
+      } else {
+        addVerticesForCharacter(curserX, curserY, letter, vertices);
+        addTexCoords(textureCoords, letter.getxTextureCoord(), letter.getyTextureCoord(), letter.getxTextureCoordMax(), letter.getyTextureCoordMax());
+        curserX += letter.getxAdvance();
       }
-      addVerticesForCharacter(curserX, curserY, letter, fontSize, vertices);
-      addTexCoords(textureCoords, letter.getxTextureCoord(), letter.getyTextureCoord(), letter.getXMaxTextureCoord(), letter.getYMaxTextureCoord());
-      curserX += letter.getxAdvance() * fontSize;
       if (curserX > maxCursorX) {
         maxCursorX = curserX;
       }
     }
 
-    curserY += LINE_HEIGHT * fontSize;
+    curserY += LINE_HEIGHT;
 
-    return new TextMeshData(Loader.listToByteBuffer(vertices, textureCoords), maxCursorX * 2f, curserY * 2f);
+    return new TextMeshData(Loader.listToByteBuffer(vertices, textureCoords), maxCursorX, curserY);
   }
 
-  private void addVerticesForCharacter(double curserX, double curserY, Character character, double fontSize, ArrayList<Float> vertices) {
-    double x = curserX + (character.getxOffset() * fontSize);
-    double y = curserY + (character.getyOffset() * fontSize);
-    double maxX = x + (character.getSizeX() * fontSize);
-    double maxY = y + (character.getSizeY() * fontSize);
-    double properX = (2 * x) - 1;
-    double properY = (-2 * y) + 1;
-    double properMaxX = (2 * maxX) - 1;
-    double properMaxY = (-2 * maxY) + 1;
-    addVertices(vertices, properX, properY, properMaxX, properMaxY);
+  private static void addVerticesForCharacter(double curserX, double curserY, Character character, ArrayList<Float> vertices) {
+    double x = curserX + character.getxOffset();
+    double y = curserY + character.getyOffset();
+    double maxX = x + character.getxSize();
+    double maxY = y + character.getySize();
+    addVertices(vertices, x, y, maxX, maxY);
   }
 
   private static void addVertices(ArrayList<Float> vertices, double x, double y, double maxX, double maxY) {
@@ -117,5 +125,9 @@ public class TextMeshCreator {
     texCoords.add((float) y);
     texCoords.add((float) x);
     texCoords.add((float) y);
+  }
+
+  MetaFile getMetaData() {
+    return metaData;
   }
 }

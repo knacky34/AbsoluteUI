@@ -5,6 +5,7 @@
 
 package fr.knacky.absoluteui.renderer;
 
+import fr.knacky.absoluteui.Gui;
 import fr.knacky.absoluteui.font.FontType;
 import fr.knacky.absoluteui.view.Text;
 import java.io.IOException;
@@ -18,12 +19,12 @@ import static org.lwjgl.opengl.GL30C.*;
 
 public class FontRenderer {
   private static HashMap<FontType, ArrayList<Text>> texts = new HashMap<>();
-  
+
   private int programID;
   private int vshaderID;
   private int fshaderID;
 
-  private int uniform_translation;
+  private int uniform_transform;
   private int uniform_color;
   private int uniform_widthsAndEdges;
   private int uniform_outlineColor;
@@ -43,7 +44,7 @@ public class FontRenderer {
   }
 
   private void initShaderProgram() {
-    uniform_translation = glGetUniformLocation(programID, "translation");
+    uniform_transform = glGetUniformLocation(programID, "transform");
     uniform_color = glGetUniformLocation(programID, "color");
     uniform_widthsAndEdges = glGetUniformLocation(programID, "widthsAndEdges");
     uniform_outlineColor = glGetUniformLocation(programID, "outlineColor");
@@ -53,23 +54,26 @@ public class FontRenderer {
     glUniform1i(uniform_fontAtlas, 0);
     glUseProgram(0);
   }
-  
-  
+
   public void render() {
+    render(texts);
+  }
+
+  public void render(HashMap<FontType, ArrayList<Text>> textsList) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
     glUseProgram(programID);
 
-    for (FontType font : texts.keySet()) {
+    for (FontType font : textsList.keySet()) {
       glBindTexture(GL_TEXTURE_2D, font.getTextureAtlas());
-      for (Text text : texts.get(font)) {
+      for (Text text : textsList.get(font)) {
         glBindVertexArray(text.getModel().getVaoID());
-        loadUniformVector2f(uniform_translation, text.getPosition());
-        loadUniformVector3f(uniform_color, text.getColor());
-        loadUniformVector4f(uniform_widthsAndEdges, text.width, text.edge, text.borderWidth, text.borderEdge);
-        loadUniformVector3f(uniform_outlineColor, text.getOutlineColor());
-        loadUniformVector2f(uniform_offset, text.getOffset());
+        loadUniform4f(uniform_transform, text.getPosition().x, text.getPosition().y, text.getFontSize() / Gui.abuiGetAspectRatio(), text.getFontSize());
+        loadUniform3f(uniform_color, text.getColor());
+        loadUniform4f(uniform_widthsAndEdges, text.width, text.edge, text.borderWidth, text.borderEdge);
+        loadUniform3f(uniform_outlineColor, text.getOutlineColor());
+        loadUniform2f(uniform_offset, text.getOffset());
 
         glDrawArrays(GL_TRIANGLES, 0, text.getModel().getVertexCount());
       }
@@ -107,15 +111,7 @@ public class FontRenderer {
 
   public static void add(ArrayList<Text> textList) {
     for (Text text : textList) {
-      FontType font = text.getFont();
-      ArrayList<Text> batch = texts.get(font);
-      if (batch != null) {
-        batch.add(text);
-      } else {
-        ArrayList<Text> newBatch = new ArrayList<>();
-        newBatch.add(text);
-        texts.put(font, newBatch);
-      }
+      add(text);
     }
   }
 

@@ -11,8 +11,7 @@ import java.io.IOException;
 
 public class Resources {
   public static class textures {
-    public static int checkbox_unchecked;
-    public static int checkbox_checked;
+    public static TextureAtlas atlas;
   }
 
   public static class font {
@@ -21,10 +20,9 @@ public class Resources {
   }
 
   public static void loadDefaults() throws IOException {
-    textures.checkbox_unchecked = Loader.loadTexture("textures/checkbox_unchecked.png", true);
-    textures.checkbox_checked = Loader.loadTexture("textures/checkbox_checked.png", true);
+    textures.atlas = new TextureAtlas(Loader.loadTexture("textures/gui_atlas.png", true), 4);
 
     font.font = new FontType(Loader.loadTexture("fonts/candara.png", false), "fonts/candara.fnt");
-    font.size = 2.0f;
+    font.size = 4.0f;
   }
 }

@@ -21,6 +21,8 @@ public abstract class View implements Motionable {
 
   public abstract void render();
 
+  public abstract void resize();
+
 
   public Vector2f getPosition() {
     return position;

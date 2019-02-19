@@ -6,8 +6,10 @@
 package fr.knacky.absoluteui.view;
 
 import com.sun.istack.internal.Nullable;
+import fr.knacky.absoluteui.Gui;
+import fr.knacky.absoluteui.Resources;
 import fr.knacky.absoluteui.callback.ActionCallback;
-import fr.knacky.absoluteui.callback.PressedCallback;
+import fr.knacky.absoluteui.callback.PressCallback;
 import fr.knacky.absoluteui.font.FontType;
 import fr.knacky.absoluteui.renderer.DrawableRenderer;
 import fr.knacky.absoluteui.renderer.FontRenderer;
@@ -18,68 +20,76 @@ public class Button extends ClickableView {
   public final Drawable background;
   public final Text label;
 
-  public Button(Vector2f position, Vector2f preferedSize, String text, @Nullable ActionCallback callback) {
-    super(position, null, callback);
-    this.label = new Text(new Vector2f(position), text, new Vector3f(1.0f, 1.0f, 1.0f));
+  private final Vector2f preferedSize;
 
-    if (preferedSize.x < this.label.size.x) preferedSize.x = this.label.size.x;
-    if (preferedSize.y < this.label.size.y) preferedSize.y = this.label.size.y;
-    super.size = preferedSize;
-
-    this.label.position.x = super.position.x + (super.size.x - this.label.size.x) / 2f;
-    this.label.position.y = super.position.y + (super.size.y - this.label.size.y) / 2f;
-
-    this.background = new Drawable(super.position, super.size, new Vector3f(0.7f, 0.7f, 0.7f));
+  public Button(Vector2f position, @Nullable Vector2f preferedSize, String text, @Nullable ActionCallback callback) {
+    this(position, preferedSize, text, Resources.font.font, Resources.font.size, callback, true);
   }
 
-  public Button(Vector2f position, Vector2f preferedSize, String text, FontType font, float fontSize, @Nullable ActionCallback callback) {
-    super(position, null, callback);
-    this.label = new Text(new Vector2f(position), font, fontSize, text, new Vector3f(1.0f, 1.0f, 1.0f));
-
-    if (preferedSize.x < this.label.getSize().x) preferedSize.x = this.label.getSize().x;
-    if (preferedSize.y < this.label.getSize().y) preferedSize.y = this.label.getSize().y;
-    super.size = preferedSize;
-
-    this.label.position.x = super.position.x + (super.size.x - this.label.size.x) / 2f;
-    this.label.position.y = super.position.y + (super.size.y - this.label.size.y) / 2f;
-
-    this.background = new Drawable(super.position, super.size, new Vector3f(0.7f, 0.7f, 0.7f));
+  public Button(Vector2f position, @Nullable Vector2f preferedSize, String text, FontType font, float fontSize, @Nullable ActionCallback callback) {
+    this(position, preferedSize, text, font, fontSize, callback, true);
   }
+
+  public Button(Vector2f position, @Nullable Vector2f preferedSize, String text, FontType font, float fontSize, @Nullable ActionCallback callback, boolean background) {
+    super(position, new Vector2f(), callback);
+    this.label = new Text(new Vector2f(), text, font, fontSize, new Vector3f(1.0f, 1.0f, 1.0f));
+    if (background) {
+      this.background = new Drawable(super.position, super.size, new Vector3f(0.7f, 0.7f, 0.7f));
+      this.preferedSize = preferedSize;
+    } else {
+      this.background = null;
+      this.preferedSize = null;
+    }
+
+    computeSizeAndLabelPos();
+  }
+
 
   @Override
   public void increasePosition(float x, float y) {
     super.position.add(x, y);
-    this.label.position.add(x, y);
+    label.position.add(x, y);
   }
 
   @Override
   public void setPosition(float x, float y) {
     super.position.set(x, y);
-    this.label.position.x = super.position.x + (super.size.x - this.label.size.x) / 2f;
-    this.label.position.y = super.position.y + (super.size.y - this.label.size.y) / 2f;
+    label.position.x = super.position.x + (super.size.x - label.size.x) / 2f;
+    label.position.y = super.position.y + (super.size.y - label.size.y) / 2f;
   }
 
+
+  private void computeSizeAndLabelPos() {
+    if (preferedSize == null) {
+      super.size.set(label.size);
+      label.position.set(super.position);
+      return;
+    }
+
+    super.size.set(preferedSize);
+    if (preferedSize.x < label.size.x) super.size.x = label.size.x;
+    if (preferedSize.y < label.size.y) super.size.y = label.size.y;
+
+    label.position.x = super.position.x + (super.size.x - label.size.x) / 2f;
+    label.position.y = super.position.y + (super.size.y - label.size.y) / 2f;
+  }
+
+
   @Override
-  public void update(float x, float y, boolean mouse) {
+  public void update(Gui gui, float x, float y, boolean mouse) {
     boolean lastHovered = super.hovered;
     boolean lastPressed = super.pressed;
 
-    if (position.x < x && x < position.x + size.x && position.y < y && y < position.y + size.y) {
-      super.hovered = true;
-      super.pressed = mouse;
-    } else {
-      super.hovered = false;
-      super.pressed = false;
-    }
+    super.update(gui, x, y, mouse);
 
     if (callback != null && (lastHovered != super.hovered || lastPressed != super.pressed)) {
       callback.onActionPerformed(this, super.hovered, super.pressed);
 
-      if (callback instanceof PressedCallback) {
+      if (callback instanceof PressCallback) {
         if (!lastPressed && super.pressed) {
-          ((PressedCallback) callback).onPressed(this, true);
+          ((PressCallback) callback).onPressed(this, true);
         } else if (lastPressed && !super.pressed && super.hovered) {
-          ((PressedCallback) callback).onPressed(this, false);
+          ((PressCallback) callback).onPressed(this, false);
         }
       }
     }
@@ -87,8 +97,16 @@ public class Button extends ClickableView {
 
   @Override
   public void render() {
-    DrawableRenderer.add(background);
+    if (background != null) {
+      DrawableRenderer.add(background);
+    }
     FontRenderer.add(label);
+  }
+
+  @Override
+  public void resize() {
+    label.resize();
+    computeSizeAndLabelPos();
   }
 
   @Override

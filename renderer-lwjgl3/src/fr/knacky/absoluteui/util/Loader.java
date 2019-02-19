@@ -86,6 +86,13 @@ public class Loader {
     return vao;
   }
 
+  public static void updateVbo(int vbo, ByteBuffer bb, int usage) {
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, bb.limit(), usage);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, bb);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
   public static void storeVertexBuffer(ByteBuffer bb, int vertexFormat) {
     int vbo = glGenBuffers();
     vbos.add(vbo);
@@ -108,7 +115,7 @@ public class Loader {
     MemoryUtil.memFree(bb);
   }
 
-  private static int getVertexCount(int bufferSize, int vertexFormat) {
+  public static int getVertexCount(int bufferSize, int vertexFormat) {
     if (vertexFormat == VERTEX_POS2D) {
       return bufferSize / (4 * 2);
     } else if (vertexFormat == VERTEX_POS2D_TEX2D) {
@@ -139,5 +146,9 @@ public class Loader {
 
     bb.flip();
     return bb;
+  }
+
+  public static int getLastVboID() {
+    return vbos.get(vbos.size() - 1);
   }
 }

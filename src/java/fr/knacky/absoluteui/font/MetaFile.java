@@ -5,158 +5,118 @@
 
 package fr.knacky.absoluteui.font;
 
-import fr.knacky.absoluteui.Gui;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import org.joml.Vector4f;
 
 public class MetaFile {
-	private static final int PAD_TOP = 0;
-	private static final int PAD_LEFT = 1;
-	private static final int PAD_BOTTOM = 2;
-	private static final int PAD_RIGHT = 3;
+	static final float LINE_HEIGHT = 0.03f;
 
-	private static final int DESIRED_PADDING = 8;
+	static final int ASCII_SPACE = 32;
+	static final int ASCII_NEWLINE = 10;
+	static final int ASCII_UNKNOWN = 127;
 
-	private static final String SPLITTER = " ";
-	private static final String NUMBER_SEPARATOR = ",";
+	private float size;
+	private int paddingWith;
+	private int imageWidth, imageHeight;
 
-	private double verticalPerPixelSize;
-	private double horizontalPerPixelSize;
-	private double spaceWidth;
-	private int[] padding;
-	private int paddingWidth;
-	private int paddingHeight;
-
-	public float minSize = 1.0f, maxSize = 50.0f;
-	public float minWidth = 0.4f, maxWidth = 0.55f;
-	public float minEdge = 0.2f, maxEdge = 0.04f;
-
-	private HashMap<Integer, Character> metaData = new HashMap<>();
-	private HashMap<String, String> values = new HashMap<>();
+	private HashMap<Integer, Character> characters = new HashMap<>();
+	private float spaceWidth;
+	private Vector4f widthEdge = new Vector4f();
 
 	MetaFile(String resource) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)))) {
-			loadPaddingData(reader);
-			loadLineSizes(reader);
-			int imageWidth = getValueOfVariableInt("scaleW");
-			loadFontWidthAndEdge(reader);
-			loadCharacterData(imageWidth, reader);
+			HashMap<String, String> variables = new HashMap<>();
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("char")) {
+					getVariables(variables, line);
+
+					Character c = loadCharacter(variables);
+					if (c != null) {
+						characters.put(c.getId(), c);
+					}
+				} else if (line.startsWith("info")) {
+					getVariables(variables, line);
+
+					int[] padding = getVariableia("padding", variables);
+					paddingWith = padding[1] + padding[3];
+					size = LINE_HEIGHT / (float) (getVariablei("lineHeight", variables) - padding[0] - padding[2]);
+
+					imageWidth = getVariablei("scaleW", variables);
+					imageHeight = getVariablei("scaleH", variables);
+
+					widthEdge.x = getVariablef("minWidth", variables);
+					widthEdge.y = getVariablef("maxWidth", variables);
+					widthEdge.z = getVariablef("minEdge", variables);
+					widthEdge.w = getVariablef("maxEdge", variables);
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		values.clear();
 	}
 
-	double getSpaceWidth() {
-		return spaceWidth;
+	private void getVariables(HashMap<String, String> variables, String line) {
+		variables.clear();
+
+		for (String part : line.split(" ")) {
+			String[] pair = part.split("=");
+			if (pair.length == 2) {
+				variables.put(pair[0], pair[1]);
+			}
+		}
+	}
+
+	private int getVariablei(String variable, HashMap<String, String> variables) {
+		return Integer.parseInt(variables.get(variable));
+	}
+
+	private int[] getVariableia(String variable, HashMap<String, String> variables) {
+		String[] numbers = variables.get(variable).split(",");
+		int[] values = new int[numbers.length];
+		for (int i = 0; i < values.length; i++) {
+			values[i] = Integer.parseInt(numbers[i]);
+		}
+		return values;
+	}
+
+	private float getVariablef(String variable, HashMap<String, String> variables) {
+		return Float.parseFloat(variables.get(variable));
+	}
+
+	private Character loadCharacter(HashMap<String, String> variables) {
+		int id = getVariablei("id", variables);
+		if (id == ASCII_SPACE) {
+			spaceWidth = (getVariablei("xadvance", variables) - paddingWith) * size;
+			return null;
+		}
+		float xTextureCoord =  (float) (getVariablei("x", variables)) / imageWidth;
+		float yTextureCoord =  (float) (getVariablei("y", variables)) / imageHeight;
+		int width = getVariablei("width", variables);
+		int height = getVariablei("height", variables);
+		float xTextureCoordMax = xTextureCoord + (float) (width) / imageWidth;
+		float yTextureCoordMax = yTextureCoord + (float) (height) / imageHeight;
+		float xSize = width * size;
+		float ySize = height * size;
+		float xOffset = getVariablei("xoffset", variables) * size;
+		float yOffset = getVariablei("yoffset", variables) * size;
+		float xAdvance = (getVariablei("xadvance", variables) - paddingWith) * size;
+		return new Character(id, xTextureCoord, yTextureCoord, xTextureCoordMax, yTextureCoordMax, xOffset, yOffset, xSize, ySize, xAdvance);
 	}
 
 	Character getCharacter(int ascii) {
-		return metaData.get(ascii);
+		return characters.get(ascii);
 	}
 
-	private boolean processNextLine(BufferedReader reader) throws IOException {
-		values.clear();
-		String line = reader.readLine();
-		if (line == null) {
-			return false;
-		}
-		for (String part : line.split(SPLITTER)) {
-			String[] valuePairs = part.split("=");
-			if (valuePairs.length == 2) {
-				values.put(valuePairs[0], valuePairs[1]);
-			}
-		}
-		return true;
+	float getSpaceWidth() {
+		return spaceWidth;
 	}
 
-	private int getValueOfVariableInt(String variable) {
-		return Integer.parseInt(values.get(variable));
-	}
-
-	private int[] getValuesOfVariableInt(String variable) {
-		String[] numbers = values.get(variable).split(NUMBER_SEPARATOR);
-		int[] actualValues = new int[numbers.length];
-		for (int i = 0; i < actualValues.length; i++) {
-			actualValues[i] = Integer.parseInt(numbers[i]);
-		}
-		return actualValues;
-	}
-
-	private float[] getValuesOfVariableFloat(String variable) {
-		String var = values.get(variable);
-		if (var == null) return null;
-		String[] numbers =	var.split(NUMBER_SEPARATOR);
-		float[] actualValues = new float[numbers.length];
-		for (int i = 0; i < actualValues.length; i++) {
-			actualValues[i] = Float.parseFloat(numbers[i]);
-		}
-		return actualValues;
-	}
-
-	private void loadPaddingData(BufferedReader reader) throws IOException {
-		processNextLine(reader);
-		this.padding = getValuesOfVariableInt("padding");
-		this.paddingWidth = padding[PAD_LEFT] + padding[PAD_RIGHT];
-		this.paddingHeight = padding[PAD_TOP] + padding[PAD_BOTTOM];
-	}
-
-	private void loadLineSizes(BufferedReader reader) throws IOException {
-		processNextLine(reader);
-		int lineHeightPixels = getValueOfVariableInt("lineHeight") - paddingHeight;
-		verticalPerPixelSize = TextMeshCreator.LINE_HEIGHT / (double) lineHeightPixels;
-		horizontalPerPixelSize = verticalPerPixelSize / Gui.abuiGetAspectRatio();
-	}
-
-	private void loadFontWidthAndEdge(BufferedReader reader) throws IOException {
-		processNextLine(reader);
-		float[] size = getValuesOfVariableFloat("fontsize");
-		float[] width = getValuesOfVariableFloat("fontwidth");
-		float[] edge = getValuesOfVariableFloat("fontedge");
-		if (size != null) {
-			minSize = size[0];
-			maxSize = size[1];
-		}
-		if (width != null) {
-			minWidth = width[0];
-			maxWidth = width[1];
-		}
-		if (edge != null) {
-			minEdge = edge[0];
-			maxEdge = edge[1];
-		}
-	}
-
-	private void loadCharacterData(int imageWidth, BufferedReader reader) throws IOException {
-		processNextLine(reader);
-		processNextLine(reader);
-		while (processNextLine(reader)) {
-			Character c = loadCharacter(imageWidth);
-			if (c != null) {
-				metaData.put(c.getId(), c);
-			}
-		}
-	}
-
-	private Character loadCharacter(int imageSize) {
-		int id = getValueOfVariableInt("id");
-		if (id == TextMeshCreator.ASCII_SPACE) {
-			this.spaceWidth = (getValueOfVariableInt("xadvance") - paddingWidth) * horizontalPerPixelSize;
-			return null;
-		}
-		double xTex = ((double) getValueOfVariableInt("x") + (padding[PAD_LEFT] - DESIRED_PADDING)) / imageSize;
-		double yTex = ((double) getValueOfVariableInt("y") + (padding[PAD_TOP] - DESIRED_PADDING)) / imageSize;
-		int width = getValueOfVariableInt("width") - (paddingWidth - (2 * DESIRED_PADDING));
-		int height = getValueOfVariableInt("height") - ((paddingHeight) - (2 * DESIRED_PADDING));
-		double quadWidth = width * horizontalPerPixelSize;
-		double quadHeight = height * verticalPerPixelSize;
-		double xTexSize = (double) width / imageSize;
-		double yTexSize = (double) height / imageSize;
-		double xOff = (getValueOfVariableInt("xoffset") + padding[PAD_LEFT] - DESIRED_PADDING) * horizontalPerPixelSize;
-		double yOff = (getValueOfVariableInt("yoffset") + (padding[PAD_TOP] - DESIRED_PADDING)) * verticalPerPixelSize;
-		double xAdvance = (getValueOfVariableInt("xadvance") - paddingWidth) * horizontalPerPixelSize;
-		return new Character(id, xTex, yTex, xTexSize, yTexSize, xOff, yOff, quadWidth, quadHeight, xAdvance);
+	Vector4f getWidthEdge() {
+		return widthEdge;
 	}
 }

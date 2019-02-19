@@ -65,23 +65,27 @@ public class ShaderUtil {
     return shader;
   }
 
-  public static void loadUniformVector2f(int uniform, float x, float y) {
+  public static void loadUniform1f(int uniform, float x) {
+    glUniform1f(uniform, x);
+  }
+
+  public static void loadUniform2f(int uniform, float x, float y) {
     glUniform2f(uniform, x, y);
   }
 
-  public static void loadUniformVector2f(int uniform, Vector2f vector2f) {
+  public static void loadUniform2f(int uniform, Vector2f vector2f) {
     glUniform2f(uniform, vector2f.x, vector2f.y);
   }
 
-  public static void loadUniformVector3f(int uniform, float x, float y, float z) {
+  public static void loadUniform3f(int uniform, float x, float y, float z) {
     glUniform3f(uniform, x, y, z);
   }
 
-  public static void loadUniformVector3f(int uniform, Vector3f vector3f) {
+  public static void loadUniform3f(int uniform, Vector3f vector3f) {
     glUniform3f(uniform, vector3f.x, vector3f.y, vector3f.z);
   }
 
-  public static void loadUniformVector4f(int uniform, float x, float y, float z, float w) {
+  public static void loadUniform4f(int uniform, float x, float y, float z, float w) {
     glUniform4f(uniform, x, y, z, w);
   }
 

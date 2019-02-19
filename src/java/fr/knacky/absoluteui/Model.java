@@ -6,7 +6,7 @@
 package fr.knacky.absoluteui;
 
 public class Model {
-  private int vaoID;
+  private final int vaoID;
   private int vertexCount;
 
   public Model(int vaoID, int vertexCount) {
@@ -20,5 +20,9 @@ public class Model {
 
   public int getVertexCount() {
     return vertexCount;
+  }
+
+  public void setVertexCount(int vertexCount) {
+    this.vertexCount = vertexCount;
   }
 }

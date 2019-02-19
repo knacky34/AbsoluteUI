@@ -7,6 +7,6 @@ package fr.knacky.absoluteui.callback;
 
 import fr.knacky.absoluteui.view.ClickableView;
 
-public interface PressedCallback extends ActionCallback {
+public interface PressCallback extends ActionCallback {
   void onPressed(ClickableView view, boolean pressed);
 }
